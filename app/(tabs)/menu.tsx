@@ -4,24 +4,26 @@ import { htmlToText } from 'html-to-text';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/menustyles'; // Stil dosyasını import et
 
+// Tarihi DD.MM.YYYY formatına çevirir
 const getCurrentDate = (): string => {
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return `${day}.${month}.${year}`;
 };
 
+// Haftalık tarihleri DD.MM.YYYY formatında döndürür
 const getWeekDates = (startDate: string): { date: string; dayName: string }[] => {
   const dates = [];
-  const start = new Date(startDate);
+  const start = new Date(startDate.split('.').reverse().join('-')); // DD.MM.YYYY -> YYYY-MM-DD
   for (let i = 0; i < 7; i++) {
     const date = new Date(start);
     date.setDate(start.getDate() + i);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    dates.push({ date: `${year}-${month}-${day}`, dayName: date.toLocaleDateString('tr-TR', { weekday: 'long' }) });
+    dates.push({ date: `${day}.${month}.${year}`, dayName: date.toLocaleDateString('tr-TR', { weekday: 'long' }) });
   }
   return dates;
 };
@@ -29,7 +31,7 @@ const getWeekDates = (startDate: string): { date: string; dayName: string }[] =>
 const fetchMeals = async (date: string, isVegetarian: boolean) => {
   const mealType = isVegetarian ? 'V' : 'O';
   const apiUrl = `https://yks.iyte.edu.tr/yemekliste.aspx?tarih=${date}&ogun=${mealType}`;
-
+  console.log(apiUrl);
   try {
     const response = await fetch(apiUrl, {
       headers: {
@@ -99,7 +101,7 @@ const MenuPage: React.FC = () => {
       if (mealData.length === 0) {
         setError('Yemek bulunamadı.');
       } else {
-        setMeals([{ date, dayName: new Date(date).toLocaleDateString('tr-TR', { weekday: 'long' }), meals: mealData }]);
+        setMeals([{ date, dayName: new Date(date.split('.').reverse().join('-')).toLocaleDateString('tr-TR', { weekday: 'long' }), meals: mealData }]);
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -170,7 +172,7 @@ const MenuPage: React.FC = () => {
 
           <View style={styles.switchContainer}>
             <Icon 
-              name={isVegetarian ? 'food-apple' : 'food-drumstick'} 
+              name="food-drumstick" 
               style={styles.icon}
             />
             <Switch
@@ -180,7 +182,7 @@ const MenuPage: React.FC = () => {
               thumbColor={isVegetarian ? '#ffffff' : '#f4f3f4'}
             />
             <Icon 
-              name={isVegetarian ? 'food-drumstick' : 'food-apple'} 
+              name="food-apple" 
               style={styles.icon}
             />
           </View>
